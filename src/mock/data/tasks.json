@@ -1,0 +1,56 @@
+[
+  {
+    "uuid": "task-1",
+    "title": "Implementar autenticação",
+    "description": "Criar sistema de login e registro de usuários",
+    "dueDate": "2024-02-15T10:00:00Z",
+    "appointments": [
+      {
+        "startedAt": "2024-01-10T09:00:00Z",
+        "endedAt": "2024-01-10T09:25:00Z",
+        "pomoId": "pomo-1"
+      }
+    ],
+    "tags": [
+      {
+        "id": "tag-1",
+        "label": "Frontend"
+      }
+    ],
+    "status": "in-progress"
+  },
+  {
+    "uuid": "task-2",
+    "title": "Configurar banco de dados",
+    "description": "Setup inicial do PostgreSQL e migrations",
+    "dueDate": "2024-02-20T16:00:00Z",
+    "appointments": [],
+    "tags": [
+      {
+        "id": "tag-2",
+        "label": "Backend"
+      }
+    ],
+    "status": "todo"
+  },
+  {
+    "uuid": "task-3",
+    "title": "Criar testes unitários",
+    "description": "Implementar testes para componentes principais",
+    "dueDate": "2024-02-25T14:00:00Z",
+    "appointments": [
+      {
+        "startedAt": "2024-01-12T14:00:00Z",
+        "endedAt": "2024-01-12T14:25:00Z",
+        "pomoId": "pomo-2"
+      }
+    ],
+    "tags": [
+      {
+        "id": "tag-3",
+        "label": "Testing"
+      }
+    ],
+    "status": "completed"
+  }
+]

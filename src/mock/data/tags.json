@@ -1,17 +1,1 @@
-[
-  {
-    "uuid": "tag-1",
-    "label": "Frontend",
-    "color": "#3498db"
-  },
-  {
-    "uuid": "tag-2",
-    "label": "Backend",
-    "color": "#e74c3c"
-  },
-  {
-    "uuid": "tag-3",
-    "label": "Testing",
-    "color": "#2ecc71"
-  }
-]
+[]

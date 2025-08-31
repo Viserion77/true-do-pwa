@@ -5,6 +5,93 @@
  */
 
 // https://vuetifyjs.com/features/sass-variables/`
-// @use 'vuetify/settings' with (
-//   $color-pack: false
-// );
+@use 'vuetify/settings' with (
+  $body-font-family: (
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    'Liberation Sans',
+    sans-serif,
+  ),
+  $heading-font-family: (
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    'Liberation Sans',
+    sans-serif,
+  )
+);
+
+:root {
+  --td-shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --td-shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+body {
+  background: #fefefe;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #1b5e20 0%, #2d7d32 45%, #4caf50 100%);
+}
+
+.bg-gradient-break {
+  background: linear-gradient(135deg, #df6813 0%, #f28c3c 100%);
+}
+
+.shadow-soft {
+  box-shadow: var(--td-shadow-soft);
+}
+.shadow-medium {
+  box-shadow: var(--td-shadow-medium);
+}
+
+.card-hover {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--td-shadow-medium);
+}
+
+.timer-mono {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.text-muted {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.container-dashboard {
+  max-width: 1280px;
+}
+
+/* Smaller icons inside inputs (prepend/append) */
+.v-text-field .v-field__prepend-inner .v-icon,
+.v-text-field .v-field__append-inner .v-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Force compact density to be shorter */
+.v-input--density-compact .v-field {
+  --v-input-control-height: 36px;
+}
+.v-input--density-compact .v-field__input {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}

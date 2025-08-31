@@ -47,114 +47,183 @@ interface Tag {
   color: string
 }
 
-export class Backend {
-  async getTasks (): Promise<Task[]> {
-    await this.sleep(150)
-    return tasksData as Task[]
-  }
+const STORAGE_KEYS = {
+  tasks: 'td_tasks',
+  pomos: 'td_pomos',
+  tags: 'td_tags',
+}
 
-  async getTaskById (uuid: string): Promise<Task | null> {
-    await this.sleep(150)
-    const tasks = tasksData as Task[]
-    return tasks.find(task => task.uuid === uuid) || null
+function readLS<T>(key: string): T | null {
+  if (typeof window === 'undefined') {
+    return null
   }
-
-  async createTask (task: Omit<Task, 'uuid'>): Promise<Task> {
-    await this.sleep(150)
-    const newTask: Task = {
-      uuid: `task-${Date.now()}`,
-      ...task,
+  try {
+    const raw = window.localStorage.getItem(key)
+    if (!raw) {
+      return null
     }
+    return JSON.parse(raw) as T
+  } catch {
+    return null
+  }
+}
+
+function writeLS<T>(key: string, value: T): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  window.localStorage.setItem(key, JSON.stringify(value))
+}
+
+export class Backend {
+  async getTasks(): Promise<Task[]> {
+    await this.sleep(120)
+    const ls = readLS<Task[]>(STORAGE_KEYS.tasks)
+    if (ls && Array.isArray(ls)) {
+      return ls
+    }
+    const fallback = tasksData as Task[]
+    writeLS(STORAGE_KEYS.tasks, fallback)
+    return fallback
+  }
+
+  async getTaskById(uuid: string): Promise<Task | null> {
+    await this.sleep(80)
+    const tasks = await this.getTasks()
+    return tasks.find((t) => t.uuid === uuid) || null
+  }
+
+  async createTask(task: Omit<Task, 'uuid'>): Promise<Task> {
+    await this.sleep(80)
+    const tasks = await this.getTasks()
+    const newTask: Task = { uuid: `task-${Date.now()}`, ...task }
+    const next = [newTask, ...tasks]
+    writeLS(STORAGE_KEYS.tasks, next)
     return newTask
   }
 
-  async updateTask (uuid: string, updates: Partial<Task>): Promise<Task | null> {
-    await this.sleep(150)
-    const tasks = tasksData as Task[]
-    const task = tasks.find(t => t.uuid === uuid)
-    if (!task) {
+  async updateTask(uuid: string, updates: Partial<Task>): Promise<Task | null> {
+    await this.sleep(80)
+    const tasks = await this.getTasks()
+    const idx = tasks.findIndex((t) => t.uuid === uuid)
+    if (idx === -1) {
       return null
     }
-    return { ...task, ...updates }
+    const updated: Task = { ...tasks[idx], ...updates }
+    const next = tasks.slice()
+    next[idx] = updated
+    writeLS(STORAGE_KEYS.tasks, next)
+    return updated
   }
 
-  async deleteTask (_uuid: string): Promise<boolean> {
-    await this.sleep(150)
+  async deleteTask(uuid: string): Promise<boolean> {
+    await this.sleep(80)
+    const tasks = await this.getTasks()
+    const next = tasks.filter((t) => t.uuid !== uuid)
+    writeLS(STORAGE_KEYS.tasks, next)
     return true
   }
 
-  async getPomos (): Promise<Pomo[]> {
-    await this.sleep(150)
-    return pomoData as Pomo[]
-  }
-
-  async getPomoById (uuid: string): Promise<Pomo | null> {
-    await this.sleep(150)
-    const pomos = pomoData as Pomo[]
-    return pomos.find(pomo => pomo.uuid === uuid) || null
-  }
-
-  async createPomo (pomo: Omit<Pomo, 'uuid'>): Promise<Pomo> {
-    await this.sleep(150)
-    const newPomo: Pomo = {
-      uuid: `pomo-${Date.now()}`,
-      ...pomo,
+  async getPomos(): Promise<Pomo[]> {
+    await this.sleep(120)
+    const ls = readLS<Pomo[]>(STORAGE_KEYS.pomos)
+    if (ls && Array.isArray(ls)) {
+      return ls
     }
+    const fallback = pomoData as Pomo[]
+    writeLS(STORAGE_KEYS.pomos, fallback)
+    return fallback
+  }
+
+  async getPomoById(uuid: string): Promise<Pomo | null> {
+    await this.sleep(80)
+    const pomos = await this.getPomos()
+    return pomos.find((p) => p.uuid === uuid) || null
+  }
+
+  async createPomo(pomo: Omit<Pomo, 'uuid'>): Promise<Pomo> {
+    await this.sleep(80)
+    const pomos = await this.getPomos()
+    const newPomo: Pomo = { uuid: `pomo-${Date.now()}`, ...pomo }
+    writeLS(STORAGE_KEYS.pomos, [newPomo, ...pomos])
     return newPomo
   }
 
-  async updatePomo (uuid: string, updates: Partial<Pomo>): Promise<Pomo | null> {
-    await this.sleep(150)
-    const pomos = pomoData as Pomo[]
-    const pomo = pomos.find(p => p.uuid === uuid)
-    if (!pomo) {
+  async updatePomo(uuid: string, updates: Partial<Pomo>): Promise<Pomo | null> {
+    await this.sleep(80)
+    const pomos = await this.getPomos()
+    const idx = pomos.findIndex((p) => p.uuid === uuid)
+    if (idx === -1) {
       return null
     }
-    return { ...pomo, ...updates }
+    const updated: Pomo = { ...pomos[idx], ...updates }
+    const next = pomos.slice()
+    next[idx] = updated
+    writeLS(STORAGE_KEYS.pomos, next)
+    return updated
   }
 
-  async deletePomo (_uuid: string): Promise<boolean> {
-    await this.sleep(150)
+  async deletePomo(uuid: string): Promise<boolean> {
+    await this.sleep(80)
+    const pomos = await this.getPomos()
+    writeLS(
+      STORAGE_KEYS.pomos,
+      pomos.filter((p) => p.uuid !== uuid)
+    )
     return true
   }
 
-  async getTags (): Promise<Tag[]> {
-    await this.sleep(150)
-    return tagsData as Tag[]
-  }
-
-  async getTagById (uuid: string): Promise<Tag | null> {
-    await this.sleep(150)
-    const tags = tagsData as Tag[]
-    return tags.find(tag => tag.uuid === uuid) || null
-  }
-
-  async createTag (tag: Omit<Tag, 'uuid'>): Promise<Tag> {
-    await this.sleep(150)
-    const newTag: Tag = {
-      uuid: `tag-${Date.now()}`,
-      ...tag,
+  async getTags(): Promise<Tag[]> {
+    await this.sleep(120)
+    const ls = readLS<Tag[]>(STORAGE_KEYS.tags)
+    if (ls && Array.isArray(ls)) {
+      return ls
     }
+    const fallback = tagsData as Tag[]
+    writeLS(STORAGE_KEYS.tags, fallback)
+    return fallback
+  }
+
+  async getTagById(uuid: string): Promise<Tag | null> {
+    await this.sleep(80)
+    const tags = await this.getTags()
+    return tags.find((t) => t.uuid === uuid) || null
+  }
+
+  async createTag(tag: Omit<Tag, 'uuid'>): Promise<Tag> {
+    await this.sleep(80)
+    const tags = await this.getTags()
+    const newTag: Tag = { uuid: `tag-${Date.now()}`, ...tag }
+    writeLS(STORAGE_KEYS.tags, [newTag, ...tags])
     return newTag
   }
 
-  async updateTag (uuid: string, updates: Partial<Tag>): Promise<Tag | null> {
-    await this.sleep(150)
-    const tags = tagsData as Tag[]
-    const tag = tags.find(t => t.uuid === uuid)
-    if (!tag) {
+  async updateTag(uuid: string, updates: Partial<Tag>): Promise<Tag | null> {
+    await this.sleep(80)
+    const tags = await this.getTags()
+    const idx = tags.findIndex((t) => t.uuid === uuid)
+    if (idx === -1) {
       return null
     }
-    return { ...tag, ...updates }
+    const updated: Tag = { ...tags[idx], ...updates }
+    const next = tags.slice()
+    next[idx] = updated
+    writeLS(STORAGE_KEYS.tags, next)
+    return updated
   }
 
-  async deleteTag (_uuid: string): Promise<boolean> {
-    await this.sleep(150)
+  async deleteTag(uuid: string): Promise<boolean> {
+    await this.sleep(80)
+    const tags = await this.getTags()
+    writeLS(
+      STORAGE_KEYS.tags,
+      tags.filter((t) => t.uuid !== uuid)
+    )
     return true
   }
 
-  private sleep (ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
 

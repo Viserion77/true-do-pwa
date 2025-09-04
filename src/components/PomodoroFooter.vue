@@ -273,7 +273,7 @@ onBeforeUnmount(() => {
   document.title = 'TrueDo - Produtividade Inteligente'
 })
 
-watch([expanded, running, mode, cycle, remaining], save, { deep: true })
+watch([expanded, running, mode, cycle, remaining, timerStartTime, totalPausedTime], save, { deep: true })
 watch([remaining, running, mode], updatePageTitle)
 
 function ensureSegmentStart() {

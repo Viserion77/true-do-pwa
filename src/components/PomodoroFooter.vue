@@ -408,6 +408,21 @@ const notificationIcon = computed(() =>
 const notificationColor = computed(() =>
   notificationPermission.value === 'granted' ? 'success' : 'warning'
 )
+
+// Update page title with timer
+function updatePageTitle() {
+  if (running.value) {
+    const modeText = mode.value === 'work'
+      ? '🍅 Foco'
+      : mode.value === 'short'
+        ? '☕ Pausa Curta'
+        : '🛋️ Pausa Longa'
+
+    document.title = `${timeText.value} - ${modeText} | TrueDo`
+  } else {
+    document.title = 'TrueDo - Produtividade Inteligente'
+  }
+}
 </script>
 
 <style scoped>

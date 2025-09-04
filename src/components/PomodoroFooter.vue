@@ -276,6 +276,20 @@ function ensureSegmentStart() {
   if (!segmentStart.value) segmentStart.value = new Date()
 }
 
+function calculateRemainingTime() {
+  if (!timerStartTime.value) return
+
+  const now = Date.now()
+  const elapsedTime = Math.floor((now - timerStartTime.value - totalPausedTime.value) / 1000)
+  const duration = mode.value === 'work' ? DUR.work : mode.value === 'short' ? DUR.short : DUR.long
+
+  remaining.value = Math.max(0, duration - elapsedTime)
+
+  if (remaining.value === 0 && running.value) {
+    completeSegment()
+  }
+}
+
 function start() {
   stopTicker()
   ensureSegmentStart()

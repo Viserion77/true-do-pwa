@@ -229,6 +229,7 @@ function load() {
 onMounted(() => {
   load()
   if (running.value) start()
+  requestNotificationPermission()
 })
 
 onBeforeUnmount(() => stopTicker())

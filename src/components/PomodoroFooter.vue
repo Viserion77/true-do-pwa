@@ -403,6 +403,10 @@ async function skipSegment() {
 }
 
 function addMinute(delta: number) {
+  if (timerStartTime.value) {
+    // Ajustar o tempo de início para refletir a mudança
+    timerStartTime.value -= delta * 60 * 1000
+  }
   remaining.value = Math.max(0, remaining.value + delta * 60)
 }
 

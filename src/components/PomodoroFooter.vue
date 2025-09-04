@@ -300,6 +300,7 @@ function pause() {
   if (!pauseStart.value) pauseStart.value = new Date()
   running.value = false
   stopTicker()
+  updatePageTitle()
 }
 function toggleRun() {
   running.value ? pause() : start()

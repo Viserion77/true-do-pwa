@@ -16,8 +16,16 @@
           variant="elevated"
           >{{ pillText }}</v-chip
         >
-        <div class="timer-mono text-h5 mr-6" :class="textColor">
-          {{ timeText }}
+        <div class="d-flex align-center mr-6">
+          <div class="timer-mono text-h5 mr-2" :class="textColor">
+            {{ timeText }}
+          </div>
+          <v-icon
+            :icon="notificationIcon"
+            :color="notificationColor"
+            size="small"
+            :title="notificationPermission === 'granted' ? 'Notificações ativadas' : 'Notificações desativadas'"
+          />
         </div>
         <v-progress-linear
           bg-color="surface"

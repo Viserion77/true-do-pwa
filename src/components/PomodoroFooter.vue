@@ -381,6 +381,13 @@ const barColor = computed(() => 'surface')
 const textColor = computed(() =>
   mode.value === 'work' ? 'text-primary' : 'text-secondary'
 )
+
+const notificationIcon = computed(() =>
+  notificationPermission.value === 'granted' ? 'mdi-bell' : 'mdi-bell-off'
+)
+const notificationColor = computed(() =>
+  notificationPermission.value === 'granted' ? 'success' : 'warning'
+)
 </script>
 
 <style scoped>

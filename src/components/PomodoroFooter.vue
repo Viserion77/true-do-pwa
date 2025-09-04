@@ -168,6 +168,32 @@ function playEndSound() {
   }
 }
 
+// Notification support
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission()
+  }
+}
+
+function showNotification() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const title = mode.value === 'work'
+      ? '🍅 Pomodoro Concluído!'
+      : '⏰ Pausa Finalizada!'
+
+    const message = mode.value === 'work'
+      ? `Foco de 25 minutos concluído! Hora da pausa.`
+      : `Pausa finalizada! Hora de voltar ao trabalho.`
+
+    new Notification(title, {
+      body: message,
+      icon: '/favicon.svg',
+      requireInteraction: true,
+      tag: 'pomodoro-timer'
+    })
+  }
+}
+
 // Segment tracking for persistence
 const segmentStart = ref<Date | null>(null)
 const pauseStart = ref<Date | null>(null)

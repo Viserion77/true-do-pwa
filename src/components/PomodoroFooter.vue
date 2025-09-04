@@ -255,9 +255,13 @@ onMounted(() => {
   if ('Notification' in window) {
     notificationPermission.value = Notification.permission
   }
+  updatePageTitle()
 })
 
-onBeforeUnmount(() => stopTicker())
+onBeforeUnmount(() => {
+  stopTicker()
+  document.title = 'TrueDo - Produtividade Inteligente'
+})
 
 watch([expanded, running, mode, cycle, remaining], save, { deep: true })
 watch([remaining, running, mode], updatePageTitle)

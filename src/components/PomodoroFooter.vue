@@ -233,6 +233,8 @@ function save() {
       mode: mode.value,
       cycle: cycle.value,
       remaining: remaining.value,
+      timerStartTime: timerStartTime.value,
+      totalPausedTime: totalPausedTime.value,
     })
   )
 }

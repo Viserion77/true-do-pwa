@@ -356,6 +356,7 @@ function stop() {
       : mode.value === 'short'
         ? DUR.short
         : DUR.long
+  updatePageTitle()
 }
 
 async function skipSegment() {

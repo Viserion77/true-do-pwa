@@ -260,6 +260,7 @@ onMounted(() => {
 onBeforeUnmount(() => stopTicker())
 
 watch([expanded, running, mode, cycle, remaining], save, { deep: true })
+watch([remaining, running, mode], updatePageTitle)
 
 function ensureSegmentStart() {
   if (!segmentStart.value) segmentStart.value = new Date()

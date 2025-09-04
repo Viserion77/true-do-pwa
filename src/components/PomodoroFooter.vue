@@ -251,6 +251,10 @@ onMounted(() => {
   load()
   if (running.value) start()
   requestNotificationPermission()
+  // Atualizar estado da permissão
+  if ('Notification' in window) {
+    notificationPermission.value = Notification.permission
+  }
 })
 
 onBeforeUnmount(() => stopTicker())

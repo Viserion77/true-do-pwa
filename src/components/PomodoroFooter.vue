@@ -296,6 +296,7 @@ async function persistCurrentSegment() {
 async function completeSegment() {
   pause()
   playEndSound()
+  showNotification()
   await persistCurrentSegment()
   // prepare next segment
   segmentStart.value = null

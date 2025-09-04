@@ -381,6 +381,8 @@ function stop() {
   segmentStart.value = null
   pauses.value = []
   pauseStart.value = null
+  timerStartTime.value = null
+  totalPausedTime.value = 0
   remaining.value =
     mode.value === 'work'
       ? DUR.work

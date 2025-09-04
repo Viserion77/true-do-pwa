@@ -363,6 +363,8 @@ async function completeSegment() {
   segmentStart.value = null
   pauses.value = []
   pauseStart.value = null
+  timerStartTime.value = null
+  totalPausedTime.value = 0
 
   if (mode.value === 'work') {
     cycle.value = (cycle.value % 4) + 1

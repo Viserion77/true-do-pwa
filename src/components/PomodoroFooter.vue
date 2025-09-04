@@ -172,7 +172,11 @@ function playEndSound() {
 // Notification support
 function requestNotificationPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission()
+    Notification.requestPermission().then((permission) => {
+      notificationPermission.value = permission
+    })
+  } else {
+    notificationPermission.value = Notification.permission
   }
 }
 

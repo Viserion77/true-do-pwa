@@ -342,6 +342,7 @@ async function completeSegment() {
     mode.value = 'work'
     remaining.value = DUR.work
   }
+  updatePageTitle()
 }
 
 function stop() {
@@ -420,7 +421,7 @@ const notificationColor = computed(() =>
 function updatePageTitle() {
   if (running.value) {
     const modeText = mode.value === 'work'
-      ? '🍅 Foco'
+      ? '���� Foco'
       : mode.value === 'short'
         ? '☕ Pausa Curta'
         : '🛋️ Pausa Longa'

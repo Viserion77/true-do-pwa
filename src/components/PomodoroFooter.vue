@@ -248,6 +248,8 @@ function load() {
     mode.value = s.mode || 'work'
     cycle.value = s.cycle || 1
     remaining.value = typeof s.remaining === 'number' ? s.remaining : DUR.work
+    timerStartTime.value = s.timerStartTime || null
+    totalPausedTime.value = s.totalPausedTime || 0
   } catch {}
 }
 

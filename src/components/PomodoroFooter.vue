@@ -294,21 +294,31 @@ function start() {
   stopTicker()
   ensureSegmentStart()
   ensureAudio()
+
+  const now = Date.now()
+
   if (pauseStart.value) {
     // closing a pause window
+    const pauseDuration = now - pauseStart.value.getTime()
+    totalPausedTime.value += pauseDuration
+
     pauses.value.push({
       startedAt: pauseStart.value.toISOString(),
       endedAt: new Date().toISOString(),
     })
     pauseStart.value = null
   }
+
+  if (!timerStartTime.value) {
+    // Starting fresh timer
+    timerStartTime.value = now
+    totalPausedTime.value = 0
+  }
+
   running.value = true
   ticker = window.setInterval(() => {
-    remaining.value = Math.max(0, remaining.value - 1)
-    if (remaining.value === 0) {
-      completeSegment()
-    }
-  }, 1000)
+    calculateRemainingTime()
+  }, 100) // Usar 100ms para maior precisão
 }
 function stopTicker() {
   if (ticker) {

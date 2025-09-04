@@ -144,6 +144,8 @@ const mode = ref<'work' | 'short' | 'long'>('work')
 const cycle = ref(1)
 const remaining = ref(DUR.work)
 const notificationPermission = ref(Notification.permission)
+const timerStartTime = ref<number | null>(null)
+const totalPausedTime = ref(0)
 let ticker: number | null = null
 
 // Audio for end sound
@@ -421,7 +423,7 @@ const notificationColor = computed(() =>
 function updatePageTitle() {
   if (running.value) {
     const modeText = mode.value === 'work'
-      ? '���� Foco'
+      ? '🍅 Foco'
       : mode.value === 'short'
         ? '☕ Pausa Curta'
         : '🛋️ Pausa Longa'

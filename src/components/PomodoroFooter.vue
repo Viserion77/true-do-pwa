@@ -255,7 +255,11 @@ function load() {
 
 onMounted(() => {
   load()
-  if (running.value) start()
+  // Calcular tempo correto se o timer estava rodando
+  if (running.value && timerStartTime.value) {
+    calculateRemainingTime()
+    start()
+  }
   requestNotificationPermission()
   // Atualizar estado da permissão
   if ('Notification' in window) {

@@ -16,8 +16,16 @@
           variant="elevated"
           >{{ pillText }}</v-chip
         >
-        <div class="timer-mono text-h5 mr-6" :class="textColor">
-          {{ timeText }}
+        <div class="d-flex align-center mr-6">
+          <div class="timer-mono text-h5 mr-2" :class="textColor">
+            {{ timeText }}
+          </div>
+          <v-icon
+            :icon="notificationIcon"
+            :color="notificationColor"
+            size="small"
+            :title="notificationPermission === 'granted' ? 'Notificações ativadas' : 'Notificações desativadas'"
+          />
         </div>
         <v-progress-linear
           bg-color="surface"
@@ -81,8 +89,16 @@
           variant="elevated"
           >{{ pillShort }}</v-chip
         >
-        <div class="timer-mono text-subtitle-1 mr-3" :class="textColor">
-          {{ timeText }}
+        <div class="d-flex align-center mr-3">
+          <div class="timer-mono text-subtitle-1 mr-1" :class="textColor">
+            {{ timeText }}
+          </div>
+          <v-icon
+            :icon="notificationIcon"
+            :color="notificationColor"
+            size="x-small"
+            :title="notificationPermission === 'granted' ? 'Notificações ativadas' : 'Notificações desativadas'"
+          />
         </div>
         <v-progress-linear
           bg-color="surface"
@@ -127,6 +143,9 @@ const running = ref(false)
 const mode = ref<'work' | 'short' | 'long'>('work')
 const cycle = ref(1)
 const remaining = ref(DUR.work)
+const notificationPermission = ref(Notification.permission)
+const timerStartTime = ref<number | null>(null)
+const totalPausedTime = ref(0)
 let ticker: number | null = null
 
 // Audio for end sound
@@ -168,6 +187,36 @@ function playEndSound() {
   }
 }
 
+// Notification support
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().then((permission) => {
+      notificationPermission.value = permission
+    })
+  } else {
+    notificationPermission.value = Notification.permission
+  }
+}
+
+function showNotification() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const title = mode.value === 'work'
+      ? '🍅 Pomodoro Concluído!'
+      : '⏰ Pausa Finalizada!'
+
+    const message = mode.value === 'work'
+      ? `Foco de 25 minutos concluído! Hora da pausa.`
+      : `Pausa finalizada! Hora de voltar ao trabalho.`
+
+    new Notification(title, {
+      body: message,
+      icon: '/favicon.svg',
+      requireInteraction: true,
+      tag: 'pomodoro-timer'
+    })
+  }
+}
+
 // Segment tracking for persistence
 const segmentStart = ref<Date | null>(null)
 const pauseStart = ref<Date | null>(null)
@@ -184,6 +233,8 @@ function save() {
       mode: mode.value,
       cycle: cycle.value,
       remaining: remaining.value,
+      timerStartTime: timerStartTime.value,
+      totalPausedTime: totalPausedTime.value,
     })
   )
 }
@@ -197,41 +248,81 @@ function load() {
     mode.value = s.mode || 'work'
     cycle.value = s.cycle || 1
     remaining.value = typeof s.remaining === 'number' ? s.remaining : DUR.work
+    timerStartTime.value = s.timerStartTime || null
+    totalPausedTime.value = s.totalPausedTime || 0
   } catch {}
 }
 
 onMounted(() => {
   load()
-  if (running.value) start()
+  // Calcular tempo correto se o timer estava rodando
+  if (running.value && timerStartTime.value) {
+    calculateRemainingTime()
+    start()
+  }
+  requestNotificationPermission()
+  // Atualizar estado da permissão
+  if ('Notification' in window) {
+    notificationPermission.value = Notification.permission
+  }
+  updatePageTitle()
 })
 
-onBeforeUnmount(() => stopTicker())
+onBeforeUnmount(() => {
+  stopTicker()
+  document.title = 'TrueDo - Produtividade Inteligente'
+})
 
-watch([expanded, running, mode, cycle, remaining], save, { deep: true })
+watch([expanded, running, mode, cycle, remaining, timerStartTime, totalPausedTime], save, { deep: true })
+watch([remaining, running, mode], updatePageTitle)
 
 function ensureSegmentStart() {
   if (!segmentStart.value) segmentStart.value = new Date()
+}
+
+function calculateRemainingTime() {
+  if (!timerStartTime.value) return
+
+  const now = Date.now()
+  const elapsedTime = Math.floor((now - timerStartTime.value - totalPausedTime.value) / 1000)
+  const duration = mode.value === 'work' ? DUR.work : mode.value === 'short' ? DUR.short : DUR.long
+
+  remaining.value = Math.max(0, duration - elapsedTime)
+
+  if (remaining.value === 0 && running.value) {
+    completeSegment()
+  }
 }
 
 function start() {
   stopTicker()
   ensureSegmentStart()
   ensureAudio()
+
+  const now = Date.now()
+
   if (pauseStart.value) {
     // closing a pause window
+    const pauseDuration = now - pauseStart.value.getTime()
+    totalPausedTime.value += pauseDuration
+
     pauses.value.push({
       startedAt: pauseStart.value.toISOString(),
       endedAt: new Date().toISOString(),
     })
     pauseStart.value = null
   }
+
+  if (!timerStartTime.value) {
+    // Starting fresh timer
+    timerStartTime.value = now
+    totalPausedTime.value = 0
+  }
+
   running.value = true
   ticker = window.setInterval(() => {
-    remaining.value = Math.max(0, remaining.value - 1)
-    if (remaining.value === 0) {
-      completeSegment()
-    }
-  }, 1000)
+    calculateRemainingTime()
+  }, 100) // Usar 100ms para maior precisão
 }
 function stopTicker() {
   if (ticker) {
@@ -243,6 +334,7 @@ function pause() {
   if (!pauseStart.value) pauseStart.value = new Date()
   running.value = false
   stopTicker()
+  updatePageTitle()
 }
 function toggleRun() {
   running.value ? pause() : start()
@@ -269,11 +361,14 @@ async function persistCurrentSegment() {
 async function completeSegment() {
   pause()
   playEndSound()
+  showNotification()
   await persistCurrentSegment()
   // prepare next segment
   segmentStart.value = null
   pauses.value = []
   pauseStart.value = null
+  timerStartTime.value = null
+  totalPausedTime.value = 0
 
   if (mode.value === 'work') {
     cycle.value = (cycle.value % 4) + 1
@@ -283,6 +378,7 @@ async function completeSegment() {
     mode.value = 'work'
     remaining.value = DUR.work
   }
+  updatePageTitle()
 }
 
 function stop() {
@@ -291,12 +387,15 @@ function stop() {
   segmentStart.value = null
   pauses.value = []
   pauseStart.value = null
+  timerStartTime.value = null
+  totalPausedTime.value = 0
   remaining.value =
     mode.value === 'work'
       ? DUR.work
       : mode.value === 'short'
         ? DUR.short
         : DUR.long
+  updatePageTitle()
 }
 
 async function skipSegment() {
@@ -304,6 +403,10 @@ async function skipSegment() {
 }
 
 function addMinute(delta: number) {
+  if (timerStartTime.value) {
+    // Ajustar o tempo de início para refletir a mudança
+    timerStartTime.value -= delta * 60 * 1000
+  }
   remaining.value = Math.max(0, remaining.value + delta * 60)
 }
 
@@ -348,6 +451,28 @@ const barColor = computed(() => 'surface')
 const textColor = computed(() =>
   mode.value === 'work' ? 'text-primary' : 'text-secondary'
 )
+
+const notificationIcon = computed(() =>
+  notificationPermission.value === 'granted' ? 'mdi-bell' : 'mdi-bell-off'
+)
+const notificationColor = computed(() =>
+  notificationPermission.value === 'granted' ? 'success' : 'warning'
+)
+
+// Update page title with timer
+function updatePageTitle() {
+  if (running.value) {
+    const modeText = mode.value === 'work'
+      ? '🍅 Foco'
+      : mode.value === 'short'
+        ? '☕ Pausa Curta'
+        : '🛋️ Pausa Longa'
+
+    document.title = `${timeText.value} - ${modeText} | TrueDo`
+  } else {
+    document.title = 'TrueDo - Produtividade Inteligente'
+  }
+}
 </script>
 
 <style scoped>
